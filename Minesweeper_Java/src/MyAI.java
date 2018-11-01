@@ -29,6 +29,18 @@ public class MyAI extends AI {
 		public TwoTuple(int x, int y) {
 			this.x = x;
 			this.y = y;
+
+		}
+
+		@Override
+		public boolean equals(Object e) {
+			if (e instanceof TwoTuple) {
+				TwoTuple e1 = (TwoTuple) e;
+				if (e1.x == this.x && e1.y == this.y)
+					return true;
+			}
+
+			return false;
 		}
 
 		public String toString() {
@@ -69,128 +81,114 @@ public class MyAI extends AI {
 
 	public MyAI(int rowDimension, int colDimension, int totalMines, int startX, int startY) {
 		// ################### Implement Constructor (required) ####################
-		rowNum = rowDimension;
-		colNum = colDimension;
-		this.currX = startX-1;
-		this.currY = startY-1;
+		rowNum = rowDimension + 1;
+		colNum = colDimension + 1;
+		this.currX = startX; 
+		this.currY = startY;
 		this.totalMines = totalMines;
 		board = new int[rowNum][colNum];
 		visited = new boolean[rowNum][colNum];
 		safeToVisit = new ArrayList<>(rowDimension * colDimension);
-		safeToVisitCounter = 0;
+		safeToVisitCounter = 1;
+		lastVisited = new TwoTuple(currX, currY);
 
 	}
 
 	// ################## Implement getAction(), (required) #####################
 	public Action getAction(int number) {
 
-		board[currX][currY] = number;
-		visited[currX][currY] = true;
+		board[lastVisited.x][lastVisited.y] = number;
+		visited[lastVisited.x][lastVisited.y] = true;
 		if (number == 0) {
-			markNeighboursSafe(currX, currY);
+			markNeighboursSafe(lastVisited.x, lastVisited.y);
 		}
-		if(safeToVisitCounter != safeToVisit.size() - 1 ){
-			lastVisited = safeToVisit.get(safeToVisitCounter);
-			return new Action(ACTION.UNCOVER, lastVisited.x+1, lastVisited.y+1);
-		}
-		else {
-			int qindex = safeToVisitCounter;
-			for(int i=0; i<rowNum ; i++) {
-				for (int j= 0; j< colNum; j++) {
-					boolean hasAtleastOneSafeNeighbour = false;
-					if(!visited[i][j]) {
-						if (i-1>=0 && j-1>=0 && safeToVisit.contains(new TwoTuple(i-1,j-1)))
-							{
-							safeToVisit.add(qindex++, (new TwoTuple(i, j)));
+		if (safeToVisitCounter <= safeToVisit.size() - 1) {
+			lastVisited = safeToVisit.get(safeToVisitCounter++);
+			return new Action(ACTION.UNCOVER, lastVisited.x , lastVisited.y );
+		} else {
+			for (int i = 1; i < rowNum; i++) {
+				for (int j = 1; j < colNum; j++) {
+					if (!visited[i][j] && !safeToVisit.contains(new TwoTuple(i, j))) {
+						boolean hasAtleastOneSafeNeighbour = false;
+						if (i - 1 >= 1 && j - 1 >= 1 && safeToVisit.contains(new TwoTuple(i - 1, j - 1))) {
+							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
-							}
-						if (i-1>=0 && j>=0 && safeToVisit.contains(new TwoTuple(i-1, j)))
-							{
-							safeToVisit.add(qindex++, (new TwoTuple(i, j)));
+						}
+						if (i - 1 >= 1 && j >= 1 && safeToVisit.contains(new TwoTuple(i - 1, j))) {
+							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
-							}
-						if (i-1>=0 && j+1< colNum && safeToVisit.contains(new TwoTuple(i-1, j+1)))
-							{
-							safeToVisit.add(qindex++, (new TwoTuple(i, j)));
+						}
+						if (i - 1 >= 1 && j + 1 < colNum && safeToVisit.contains(new TwoTuple(i - 1, j + 1))) {
+							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
-							}
-						if (i>=0 && j+1<colNum && safeToVisit.contains(new TwoTuple(i, j+1)))
-							{
-							safeToVisit.add(qindex++, (new TwoTuple(i, j)));
+						}
+						if (i >= 1 && j + 1 < colNum && safeToVisit.contains(new TwoTuple(i, j + 1))) {
+							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
-							}
-						if (i+1 < rowNum && j+1<colNum && safeToVisit.contains(new TwoTuple(i+1, j+1)))
-							{
-							safeToVisit.add(qindex++, (new TwoTuple(i, j)));
+						}
+						if (i + 1 < rowNum && j + 1 < colNum && safeToVisit.contains(new TwoTuple(i + 1, j + 1))) {
+							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
-							}
-						if (i+1 < rowNum && j<colNum && safeToVisit.contains(new TwoTuple(i+1, j)))
-							{
-							safeToVisit.add(qindex++, (new TwoTuple(i, j)));
+						}
+						if (i + 1 < rowNum && j < colNum && safeToVisit.contains(new TwoTuple(i + 1, j))) {
+							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
-							}
-						if (i+1 < rowNum && j-1 >= 0 && safeToVisit.contains(new TwoTuple(i+1, j-1)))
-							{
-							safeToVisit.add(qindex++, (new TwoTuple(i, j)));
+						}
+						if (i + 1 < rowNum && j - 1 >= 1 && safeToVisit.contains(new TwoTuple(i + 1, j - 1))) {
+							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
-							}
-						if (i < rowNum && j-1>=0 && safeToVisit.contains(new TwoTuple(i, j-1)))
-							{
-							safeToVisit.add(qindex++, (new TwoTuple(i, j)));
+						}
+						if (i < rowNum && j - 1 >= 1 && safeToVisit.contains(new TwoTuple(i, j - 1))) {
+							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
-							}
+						}
 
-						
+					if (!hasAtleastOneSafeNeighbour) {
+						lastVisited = new TwoTuple(i , j );
+						return new Action(ACTION.FLAG, i , j );
 					}
-					if(!hasAtleastOneSafeNeighbour) {
-						return new Action(ACTION.FLAG, i+1, j+1);
 					}
 				}
 			}
 		}
 		if (safeToVisitCounter < safeToVisit.size()) {
-			lastVisited = safeToVisit.get(safeToVisitCounter);
-			return new Action(ACTION.UNCOVER, lastVisited.x+1, lastVisited.y+1);
+			lastVisited = safeToVisit.get(safeToVisitCounter++);
+			return new Action(ACTION.UNCOVER, lastVisited.x , lastVisited.y );
+		}
+		System.out.println("Leaving the game");
+		for(int i=1; i< rowNum; i++) {
+			for (int j=1; j<colNum; j++) {
+				System.out.print(board[i][j] + " ");
+			}
+			System.out.println();
 		}
 		return new Action(ACTION.LEAVE);
 	}
 
 	private void markNeighboursSafe(int currX2, int currY2) {
-		safeToVisit.add(new TwoTuple(currX, currY)); safeToVisitCounter++;
-		if (currX - 1 < rowNum && currY - 1 > 0 && !visited[currX - 1][currY - 1])
-			safeToVisit.add(new TwoTuple(currX - 1, currY - 1));
+		markSafe(currX2, currY2);
+		markSafe(currX2 - 1, currY2 - 1);
+		markSafe(currX2 - 1, currY2);
+		markSafe(currX2 - 1, currY2 + 1);
+		markSafe(currX2, currY2 + 1);
+		markSafe(currX2 + 1, currY2 + 1);
+		markSafe(currX2 + 1, currY2);
+		markSafe(currX2 + 1, currY2 - 1);
+		markSafe(currX2, currY2 - 1);
 
-		if (currX - 1 > 0 && !visited[currX - 1][currY])
-			safeToVisit.add(new TwoTuple(currX - 1, currY));
+	}
 
-		if (currX - 1 < rowNum && currY + 1 < colNum && !visited[currX - 1][currY + 1])
-			safeToVisit.add(new TwoTuple(currX - 1, currY + 1));
-
-		if (currY + 1 < colNum && !visited[currX][currY + 1]) {
-			safeToVisit.add(new TwoTuple(currX, currY + 1));
-		}
-
-		if (currX + 1 < rowNum && currY + 1 < colNum && !visited[currX + 1][currY + 1])
-			safeToVisit.add(new TwoTuple(currX + 1, currY + 1));
-
-		if (currX + 1 < rowNum && !visited[currX + 1][currY])
-			safeToVisit.add(new TwoTuple(currX + 1, currY));
-
-		if (currX + 1 < rowNum && currY - 1 < colNum && !visited[currX + 1][currY - 1])
-			safeToVisit.add(new TwoTuple(currX + 1, currY - 1));
-
-		if (currY - 1 < colNum && !visited[currX][currY - 1]) {
-			safeToVisit.add(new TwoTuple(currX, currY - 1));
-		}
-
+	private void markSafe(int x, int y) {
+		if (x < rowNum && y >= 1 && x >= 1 && y < colNum && !safeToVisit.contains(new TwoTuple(x, y)))
+			safeToVisit.add(new TwoTuple(x, y));
 	}
 
 // ################### Helper Functions Go Here (optional) ##################
