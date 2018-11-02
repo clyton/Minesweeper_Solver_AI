@@ -134,7 +134,7 @@ public class MyAI extends AI {
 			lastVisited = safeToVisit.get(safeToVisitCounter++);
 			return new Action(ACTION.UNCOVER, lastVisited.x, lastVisited.y);
 		} else {
-			Queue<TwoTuple> votePq = new PriorityQueue<>(voteComparator);
+			Queue<TwoTuple> votePq = new PriorityQueue<>(2,voteComparator);
 			for (int i = 1; i < rowNum; i++) {
 				for (int j = 1; j < colNum; j++) {
 					if (!visited[i][j] && !safeToVisit.contains(new TwoTuple(i, j))) {
