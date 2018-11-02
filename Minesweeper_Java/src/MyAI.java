@@ -18,13 +18,25 @@ NOTES:       - If you are having trouble understanding how the shell
 package src;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import src.Action.ACTION;
 
 public class MyAI extends AI {
+
+	public static Comparator<TwoTuple> voteComparator = new Comparator<TwoTuple>() {
+		@Override
+		public int compare(TwoTuple t1, TwoTuple t2) {
+			return t1.votes - t2.votes;
+		}
+	};
+
 	private class TwoTuple {
 		public int x;
 		public int y;
+		public int votes = 0;
 
 		public TwoTuple(int x, int y) {
 			this.x = x;
@@ -83,7 +95,7 @@ public class MyAI extends AI {
 		// ################### Implement Constructor (required) ####################
 		rowNum = rowDimension + 1;
 		colNum = colDimension + 1;
-		this.currX = startX; 
+		this.currX = startX;
 		this.currY = startY;
 		this.totalMines = totalMines;
 		board = new int[rowNum][colNum];
@@ -92,85 +104,138 @@ public class MyAI extends AI {
 		safeToVisitCounter = 1;
 		lastVisited = new TwoTuple(currX, currY);
 
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board.length; j++) {
+				if (i == 0 || j == 0) {
+					if (i == 0)
+						board[i][j] = j;
+
+					if (j == 0) {
+						board[i][j] = i;
+					}
+				} else {
+					board[i][j] = -1;
+				}
+			}
+		}
+
 	}
 
 	// ################## Implement getAction(), (required) #####################
 	public Action getAction(int number) {
 
 		board[lastVisited.x][lastVisited.y] = number;
+		printboard(board);
 		visited[lastVisited.x][lastVisited.y] = true;
 		if (number == 0) {
 			markNeighboursSafe(lastVisited.x, lastVisited.y);
 		}
 		if (safeToVisitCounter <= safeToVisit.size() - 1) {
 			lastVisited = safeToVisit.get(safeToVisitCounter++);
-			return new Action(ACTION.UNCOVER, lastVisited.x , lastVisited.y );
+			return new Action(ACTION.UNCOVER, lastVisited.x, lastVisited.y);
 		} else {
+			Queue<TwoTuple> votePq = new PriorityQueue<>(voteComparator);
 			for (int i = 1; i < rowNum; i++) {
 				for (int j = 1; j < colNum; j++) {
 					if (!visited[i][j] && !safeToVisit.contains(new TwoTuple(i, j))) {
 						boolean hasAtleastOneSafeNeighbour = false;
-						if (i - 1 >= 1 && j - 1 >= 1 && safeToVisit.contains(new TwoTuple(i - 1, j - 1))) {
+						if (i - 1 >= 1 && j - 1 >= 1 && board[i - 1][ j - 1] == 0) {
 							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
 						}
-						if (i - 1 >= 1 && j >= 1 && safeToVisit.contains(new TwoTuple(i - 1, j))) {
+						if (i - 1 >= 1 && j >= 1 && board[i - 1][ j] == 0) {
 							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
 						}
-						if (i - 1 >= 1 && j + 1 < colNum && safeToVisit.contains(new TwoTuple(i - 1, j + 1))) {
+						if (i - 1 >= 1 && j + 1 < colNum && board[i - 1][ j + 1]== 0 ) {
 							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
 						}
-						if (i >= 1 && j + 1 < colNum && safeToVisit.contains(new TwoTuple(i, j + 1))) {
+						if (i >= 1 && j + 1 < colNum && board[i][ j + 1] == 0){
 							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
 						}
-						if (i + 1 < rowNum && j + 1 < colNum && safeToVisit.contains(new TwoTuple(i + 1, j + 1))) {
+						if (i + 1 < rowNum && j + 1 < colNum && board[i + 1][ j + 1]== 0 ) {
 							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
 						}
-						if (i + 1 < rowNum && j < colNum && safeToVisit.contains(new TwoTuple(i + 1, j))) {
+						if (i + 1 < rowNum && j < colNum && board[i + 1][ j]== 0 ) {
 							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
 						}
-						if (i + 1 < rowNum && j - 1 >= 1 && safeToVisit.contains(new TwoTuple(i + 1, j - 1))) {
+						if (i + 1 < rowNum && j - 1 >= 1 && board[i + 1][ j - 1]== 0 ) {
 							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
 						}
-						if (i < rowNum && j - 1 >= 1 && safeToVisit.contains(new TwoTuple(i, j - 1))) {
+						if (i < rowNum && j - 1 >= 1 && board[i][ j - 1]== 0 ) {
 							safeToVisit.add((new TwoTuple(i, j)));
 							hasAtleastOneSafeNeighbour = true;
 							continue;
 						}
 
-					if (!hasAtleastOneSafeNeighbour) {
-						lastVisited = new TwoTuple(i , j );
-						return new Action(ACTION.FLAG, i , j );
-					}
+						if (!hasAtleastOneSafeNeighbour) {
+							int add = 0;
+							if (i - 1 >= 1 && j - 1 >= 1 && visited[i - 1][j - 1])
+								add += board[i - 1][j - 1];
+							if (i - 1 >= 1 && j >= 1 && visited[i - 1][j])
+								add += board[i - 1][j];
+							if (i - 1 >= 1 && j + 1 < colNum && visited[i - 1][j + 1])
+								add += board[i - 1][j + 1];
+							if (i >= 1 && j + 1 < colNum && visited[i][j + 1])
+								add += board[i][j + 1];
+							if (i + 1 < rowNum && j + 1 < colNum && visited[i + 1][j + 1])
+								add += board[i + 1][j + 1];
+							if (i + 1 < rowNum && j < colNum && visited[i + 1][j])
+								add += board[i + 1][j];
+							if (i + 1 < rowNum && j - 1 >= 1 && visited[i + 1][j - 1])
+								add += board[i + 1][j - 1];
+							if (i < rowNum && j - 1 >= 1 && visited[i][j - 1])
+								add += board[i][j - 1];
+							TwoTuple unsafeTuple = new TwoTuple(i, j);
+							unsafeTuple.votes = add;
+							votePq.add(unsafeTuple);
+						}
 					}
 				}
+			}
+			if (votePq.size() == 1 && safeToVisitCounter >= safeToVisit.size()) {
+				lastVisited = votePq.poll();
+				return new Action(ACTION.FLAG, lastVisited.x, lastVisited.y);
+			}
+			if (votePq.size() > 1 && safeToVisitCounter >= safeToVisit.size()) {
+				lastVisited = votePq.poll();
+				return new Action(ACTION.UNCOVER, lastVisited.x, lastVisited.y);
 			}
 		}
 		if (safeToVisitCounter < safeToVisit.size()) {
 			lastVisited = safeToVisit.get(safeToVisitCounter++);
-			return new Action(ACTION.UNCOVER, lastVisited.x , lastVisited.y );
+			return new Action(ACTION.UNCOVER, lastVisited.x, lastVisited.y);
 		}
 		System.out.println("Leaving the game");
-		for(int i=1; i< rowNum; i++) {
-			for (int j=1; j<colNum; j++) {
+		for (int i = 1; i < rowNum; i++) {
+			for (int j = 1; j < colNum; j++) {
 				System.out.print(board[i][j] + " ");
 			}
 			System.out.println();
 		}
 		return new Action(ACTION.LEAVE);
+	}
+
+	private void printboard(int[][] board2) {
+		for (int i = 0; i < board2.length; i++) {
+			for (int j = 0; j < board2.length; j++) {
+				System.out.printf("%-5d", board[i][j]);
+			}
+			System.out.println();
+		}
+
 	}
 
 	private void markNeighboursSafe(int currX2, int currY2) {
