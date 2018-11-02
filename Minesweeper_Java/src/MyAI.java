@@ -125,7 +125,7 @@ public class MyAI extends AI {
 	public Action getAction(int number) {
 
 		board[lastVisited.x][lastVisited.y] = number;
-		printboard(board);
+//		printboard(board);
 		visited[lastVisited.x][lastVisited.y] = true;
 		if (number == 0) {
 			markNeighboursSafe(lastVisited.x, lastVisited.y);
@@ -217,13 +217,6 @@ public class MyAI extends AI {
 		if (safeToVisitCounter < safeToVisit.size()) {
 			lastVisited = safeToVisit.get(safeToVisitCounter++);
 			return new Action(ACTION.UNCOVER, lastVisited.x, lastVisited.y);
-		}
-		System.out.println("Leaving the game");
-		for (int i = 1; i < rowNum; i++) {
-			for (int j = 1; j < colNum; j++) {
-				System.out.print(board[i][j] + " ");
-			}
-			System.out.println();
 		}
 		return new Action(ACTION.LEAVE);
 	}
