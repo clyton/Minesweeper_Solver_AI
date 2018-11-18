@@ -21,10 +21,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import src.Action.ACTION;
 
@@ -229,6 +231,7 @@ public class MyAI extends AI {
 			return uncover(lastVisited);
 		} else {
 			System.out.println("Safe to visit is empty");
+			HashSet<TwoTuple> tilesToFlag = new HashSet<>();
 			for (TwoTuple cell : minePq) { // minePq operations
 
 //					long countOfCoveredCells = cell.getNeighbors().stream().
@@ -238,36 +241,34 @@ public class MyAI extends AI {
 				int countOfCoveredCells = 0;
 				ArrayList<TwoTuple> cellsNeighbors = cell.getNeighbors();
 				for (TwoTuple celli : cellsNeighbors) {
-					if (celli.visited == false ) {
+					if ((celli.visited == false) && (celli.flagged == false)) {
 						countOfCoveredCells++;
 					}
 				}
 
-				for (TwoTuple celli : cellsNeighbors) {
-					if (celli.visited == false && celli.flagged == false) {
-						celli.votes += cell.noOfNeighboringMines / (countOfCoveredCells * 1.0);
-						votePq.add(celli);
-					}
-				}
-
 				if (cell.noOfNeighboringMines == countOfCoveredCells) {
-					for (TwoTuple neighbor : cell.getNeighbors()) {
-						if (neighbor.visited == false) { // flag closed/covered cells
-							neighbor.flagged = true;
-							flaggedMines.add(neighbor);
-							ArrayList<TwoTuple> neighborsOfKnownMines = neighbor.getNeighbors();
-							for (TwoTuple n : neighborsOfKnownMines) { // for each closed cell's neighbor
-								setNumberOfMines(n, -1); // decrement count of number of mines
-								if (n.visited == true && n.noOfNeighboringMines == 0) {
-// if the count becomes zero for a neighbor that was visited then mark its neighbors safe
-									markNeighboursSafe(n);
-								}
-
-							}
-						}
-					}
+					tilesToFlag.addAll(
+					cell.getNeighbors()
+					.stream()
+					.filter(icell -> !icell.visited && !icell.flagged)
+					.collect(Collectors.toList()));
 				}
 
+			}
+			for(TwoTuple eachTile: tilesToFlag) {
+				eachTile.flagged = true;
+				eachTile.getNeighbors().forEach(n -> setNumberOfMines(n, -1));
+				flaggedMines.add(eachTile);
+			}
+			
+			
+			for(int i=1; i<rowNum; i++) {
+			for (int j=1; j<colNum; j++) {
+				TwoTuple twoTuple = board[i][j];
+				if (twoTuple.noOfNeighboringMines == 0) {
+					markNeighboursSafe(twoTuple);
+				}
+			}
 			}
 		}
 
@@ -286,6 +287,25 @@ public class MyAI extends AI {
 		if (isThereAFreeCorner() != null) {
 			lastVisited = isThereAFreeCorner();
 			return uncover(lastVisited);
+		}
+		
+		for(int i=1; i<rowNum; i++) {
+			for (int j=1; j<colNum; j++) {
+				TwoTuple cell = board[i][j];
+				if(cell.visited == false) {
+					List<TwoTuple> nonFlaggedVisitedNeighbors = cell.getNeighbors()
+							.stream()
+							.filter(icell -> !icell.visited && !icell.flagged)
+							.collect(Collectors.toList());
+					
+					double sum = 0.0;
+					for (TwoTuple twoTuple : nonFlaggedVisitedNeighbors) {
+						sum += twoTuple.noOfNeighboringMines;
+					}
+					cell.votes = sum/nonFlaggedVisitedNeighbors.size();
+					votePq.add(cell);
+				}
+			}
 		}
 		
 		if (!votePq.isEmpty()) {
@@ -316,6 +336,7 @@ public class MyAI extends AI {
 	private Action flag(TwoTuple lastVisited2) {
 		// TODO Auto-generated method stub
 //		coveredTiles--;
+		flaggedMines.add(lastVisited2);
 		return new Action(ACTION.FLAG, lastVisited2.x, lastVisited2.y);
 	}
 
