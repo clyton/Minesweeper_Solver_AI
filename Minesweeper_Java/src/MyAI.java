@@ -305,10 +305,18 @@ public class MyAI extends AI {
 	private void printboard(TwoTuple[][] board2) {
 		for (int i = 0; i < board2.length; i++) {
 			for (int j = 0; j < board2.length; j++) {
+				String no = "";
 				int noToPrint = board[i][j].noOfNeighboringMines;
 				if (noToPrint == Integer.MAX_VALUE)
-					noToPrint = -1;
-				System.out.printf("%-5d", noToPrint);
+					no = "#";
+				if (board2[i][j].flagged)
+					no = "F";
+				if (board2[i][j].visited)
+					no = String.valueOf(noToPrint);
+				if (!board2[i][j].visited && !board[i][j].flagged && noToPrint != Integer.MAX_VALUE)
+					no = String.valueOf(noToPrint);
+				
+				System.out.printf("%-5s", no);
 			}
 			System.out.println();
 		}
