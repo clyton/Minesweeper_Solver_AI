@@ -201,6 +201,7 @@ public class MyAI extends AI {
 	public Action getAction(int number) {
 
 		Queue<TwoTuple> votePq = new PriorityQueue<>(10,voteComparator);
+//		minePq.removeIf(cell -> cell.noOfNeighboringMines==0 && cell.visited);
 		setNumberOfMines(lastVisited, number);
 		lastVisited.visited = true;
 		printboard(board);
@@ -239,7 +240,7 @@ public class MyAI extends AI {
 
 				for (TwoTuple celli : cellsNeighbors) {
 					if (celli.visited == false) {
-						celli.votes += cell.noOfNeighboringMines / countOfCoveredCells;
+						celli.votes += cell.noOfNeighboringMines / (countOfCoveredCells * 1.0);
 						votePq.add(celli);
 					}
 				}
