@@ -19,6 +19,7 @@ package src;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -164,6 +165,9 @@ public class MyAI extends AI {
 	boolean oneEncountered = false;
 	int safeToVisitCounter;
 	Queue<TwoTuple> minePq = new PriorityQueue<>(2, mineComparator);
+	HashSet<TwoTuple> flaggedMines = new HashSet<>();
+
+	private int coveredTiles = 0;
 
 	public MyAI(int rowDimension, int colDimension, int totalMines, int startX, int startY) {
 		// ################### Implement Constructor (required) ####################
@@ -176,6 +180,7 @@ public class MyAI extends AI {
 		// visited = new boolean[rowNum][colNum];
 		safeToVisit = new TreeSet<TwoTuple>();
 		// safeToVisitCounter = 1;
+		coveredTiles = (rowNum-1) * (colNum-1) - 1 ;
 
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board.length; j++) {
@@ -221,7 +226,7 @@ public class MyAI extends AI {
 			Iterator<TwoTuple> setIterator = safeToVisit.iterator();
 			lastVisited = setIterator.next();
 			safeToVisit.remove(lastVisited);
-			return new Action(ACTION.UNCOVER, lastVisited.x, lastVisited.y);
+			return uncover(lastVisited);
 		} else {
 			System.out.println("Safe to visit is empty");
 			for (TwoTuple cell : minePq) { // minePq operations
@@ -233,13 +238,13 @@ public class MyAI extends AI {
 				int countOfCoveredCells = 0;
 				ArrayList<TwoTuple> cellsNeighbors = cell.getNeighbors();
 				for (TwoTuple celli : cellsNeighbors) {
-					if (celli.visited == false) {
+					if (celli.visited == false ) {
 						countOfCoveredCells++;
 					}
 				}
 
 				for (TwoTuple celli : cellsNeighbors) {
-					if (celli.visited == false) {
+					if (celli.visited == false && celli.flagged == false) {
 						celli.votes += cell.noOfNeighboringMines / (countOfCoveredCells * 1.0);
 						votePq.add(celli);
 					}
@@ -249,6 +254,7 @@ public class MyAI extends AI {
 					for (TwoTuple neighbor : cell.getNeighbors()) {
 						if (neighbor.visited == false) { // flag closed/covered cells
 							neighbor.flagged = true;
+							flaggedMines.add(neighbor);
 							ArrayList<TwoTuple> neighborsOfKnownMines = neighbor.getNeighbors();
 							for (TwoTuple n : neighborsOfKnownMines) { // for each closed cell's neighbor
 								setNumberOfMines(n, -1); // decrement count of number of mines
@@ -265,17 +271,30 @@ public class MyAI extends AI {
 			}
 		}
 
+		if (totalMines - flaggedMines.size() == coveredTiles - flaggedMines.size()) {
+			lastVisited = votePq.poll();
+			return flag(lastVisited);
+		}
 		// if the operations on minepq have given some safe cells then open them
 		if (!safeToVisit.isEmpty()) {
 			Iterator<TwoTuple> setIterator = safeToVisit.iterator();
 			lastVisited = setIterator.next();
 			safeToVisit.remove(lastVisited);
-			return new Action(ACTION.UNCOVER, lastVisited.x, lastVisited.y);
+			return uncover(lastVisited);
 		}
 
+		if (isThereAFreeCorner() != null) {
+			lastVisited = isThereAFreeCorner();
+			return uncover(lastVisited);
+		}
+		
 		if (!votePq.isEmpty()) {
 			lastVisited = votePq.poll();
-			return new Action(ACTION.UNCOVER, lastVisited.x, lastVisited.y);
+			for (TwoTuple twoTuple : votePq) {
+				twoTuple.votes = 0.0;
+			}
+			votePq.clear();
+			return uncover(lastVisited);
 		}
 		// Queue<TwoTuple> votePq = new PriorityQueue<>(2,voteComparator);
 		// if (votePq.size() == 1 && safeToVisitCounter >= safeToVisit.size()) {
@@ -292,6 +311,27 @@ public class MyAI extends AI {
 		// return new Action(ACTION.UNCOVER, lastVisited.x, lastVisited.y);
 		// }
 		return new Action(ACTION.LEAVE);
+	}
+
+	private Action flag(TwoTuple lastVisited2) {
+		// TODO Auto-generated method stub
+//		coveredTiles--;
+		return new Action(ACTION.FLAG, lastVisited2.x, lastVisited2.y);
+	}
+
+	private Action uncover(TwoTuple lastVisited) {
+		coveredTiles--;
+		return new Action(ACTION.UNCOVER, lastVisited.x, lastVisited.y);
+	}
+
+	private TwoTuple isThereAFreeCorner() {
+		TwoTuple[] corner = {board[1][1], board[1][colNum-1], board[rowNum-1][1], board[rowNum-1][colNum-1]};
+		for (TwoTuple twoTuple : corner) {
+			if (!twoTuple.visited && !twoTuple.flagged) {
+				return twoTuple;
+			}
+		}
+		return null;
 	}
 
 	private void setNumberOfMines(TwoTuple lastVisited, int number) {
