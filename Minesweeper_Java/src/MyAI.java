@@ -211,7 +211,7 @@ public class MyAI extends AI {
 //		minePq.removeIf(cell -> cell.noOfNeighboringMines==0 && cell.visited);
 		setNumberOfMines(lastVisited, number);
 		lastVisited.visited = true;
-		printboard(board);
+//		printboard(board);
 		// visited[lastVisited.x][lastVisited.y] = true;
 		number = lastVisited.noOfNeighboringMines;
 
@@ -230,7 +230,7 @@ public class MyAI extends AI {
 			safeToVisit.remove(lastVisited);
 			return uncover(lastVisited);
 		} else {
-			System.out.println("Safe to visit is empty");
+//			System.out.println("Safe to visit is empty");
 			HashSet<TwoTuple> tilesToFlag = new HashSet<>();
 			for (TwoTuple cell : minePq) { // minePq operations
 
