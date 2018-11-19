@@ -272,10 +272,10 @@ public class MyAI extends AI {
 			}
 		}
 
-		if (totalMines - flaggedMines.size() == coveredTiles - flaggedMines.size()) {
-			lastVisited = votePq.poll();
-			return flag(lastVisited);
-		}
+//		if (totalMines - flaggedMines.size() == coveredTiles - flaggedMines.size()) {
+//			lastVisited = votePq.poll();
+//			return flag(lastVisited);
+//		}
 		// if the operations on minepq have given some safe cells then open them
 		if (!safeToVisit.isEmpty()) {
 			Iterator<TwoTuple> setIterator = safeToVisit.iterator();
@@ -292,7 +292,7 @@ public class MyAI extends AI {
 		for(int i=1; i<rowNum; i++) {
 			for (int j=1; j<colNum; j++) {
 				TwoTuple cell = board[i][j];
-				if(cell.visited == false) {
+				if(cell.visited == false && cell.flagged == false) {
 					List<TwoTuple> nonFlaggedVisitedNeighbors = cell.getNeighbors()
 							.stream()
 							.filter(icell -> !icell.visited && !icell.flagged)
