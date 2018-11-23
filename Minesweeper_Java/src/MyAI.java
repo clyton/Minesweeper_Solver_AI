@@ -173,8 +173,8 @@ public class MyAI extends AI {
 
 	public MyAI(int rowDimension, int colDimension, int totalMines, int startX, int startY) {
 		// ################### Implement Constructor (required) ####################
-		rowNum = rowDimension + 1;
-		colNum = colDimension + 1;
+		rowNum = colDimension + 1;
+		colNum = rowDimension + 1;
 		this.currX = startX;
 		this.currY = startY;
 		this.totalMines = totalMines;
@@ -184,8 +184,8 @@ public class MyAI extends AI {
 		// safeToVisitCounter = 1;
 		coveredTiles = (rowNum-1) * (colNum-1) - 1 ;
 
-		for (int i = 0; i < board.length; i++) {
-			for (int j = 0; j < board.length; j++) {
+		for (int i = 0; i < rowNum; i++) {
+			for (int j = 0; j < colNum; j++) {
 				if (i == 0 || j == 0) {
 					if (i == 0) {
 						board[i][j] = new TwoTuple(i, j, j);
@@ -365,8 +365,8 @@ public class MyAI extends AI {
 	}
 
 	private void printboard(TwoTuple[][] board2) {
-		for (int i = 0; i < board2.length; i++) {
-			for (int j = 0; j < board2.length; j++) {
+		for (int i = 0; i < rowNum; i++) {
+			for (int j = 0; j < colNum; j++) {
 				String no = "";
 				int noToPrint = board[i][j].noOfNeighboringMines;
 				if (noToPrint == Integer.MAX_VALUE)
