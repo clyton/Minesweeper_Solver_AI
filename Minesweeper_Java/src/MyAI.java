@@ -274,7 +274,7 @@ public class MyAI extends AI {
 				TwoTuple cell = board[i][j];
 				if (cell.visited == false && cell.flagged == false) {
 					List<TwoTuple> nonFlaggedVisitedNeighbors = cell.getNeighbors().stream()
-							.filter(icell -> !icell.visited && !icell.flagged).collect(Collectors.toList());
+							.filter(icell -> icell.visited && !icell.flagged).collect(Collectors.toList());
 
 					double sum = 0.0;
 					for (TwoTuple twoTuple : nonFlaggedVisitedNeighbors) {
@@ -314,69 +314,44 @@ public class MyAI extends AI {
 	private void findPatterns() {
 
 		/**
-		 * -1 i 1
-		 * -1	* * * 
-		 * 1 2 1 
-		 * O O O
+		 * -1 i 1 -1 * * * 1 2 1 O O O
 		 * 
-		 * * * * * 
-		 * 1 2 2 1 
-		 * 0 0 0 0
+		 * * * * * 1 2 2 1 0 0 0 0
 		 * 
 		 */
-		
+
 		HashSet<TwoTuple> tilesToFlag = new HashSet();
 
 		for (int i = 2; i < rowNum - 1; i++) {
 			for (int j = 2; j < colNum - 1; j++) {
-				if (board[i][j].noOfNeighboringMines == 2 && 
-					board[i-1][j].noOfNeighboringMines == 1 && 
-					board[i+1][j].noOfNeighboringMines == 1 &&
-					!board[i][j-1].visited && 
-					!board[i-1][j-1].visited  && 
-					!board[i+1][j-1].visited  &&
-					board[i][j+1].visited &&
-					board[i-1][j+1].visited  && 
-					board[i+1][j+1].visited ) {
-					tilesToFlag.add(board[i-1][j-1]);
-					tilesToFlag.add(board[i+1][j-1]);
+				if (board[i][j].noOfNeighboringMines == 2 && board[i - 1][j].noOfNeighboringMines == 1
+						&& board[i + 1][j].noOfNeighboringMines == 1 && !board[i][j - 1].visited
+						&& !board[i - 1][j - 1].visited && !board[i + 1][j - 1].visited && board[i][j + 1].visited
+						&& board[i - 1][j + 1].visited && board[i + 1][j + 1].visited) {
+					tilesToFlag.add(board[i - 1][j - 1]);
+					tilesToFlag.add(board[i + 1][j - 1]);
 				}
-				if (board[i][j].noOfNeighboringMines == 2 && 
-					board[i-1][j].noOfNeighboringMines == 1 && 
-					board[i+1][j].noOfNeighboringMines == 1 &&
-					board[i][j-1].visited && 
-					board[i-1][j-1].visited  && 
-					board[i+1][j-1].visited  &&
-					!board[i][j+1].visited &&
-					!board[i-1][j+1].visited  && 
-					!board[i+1][j+1].visited ) {
-					tilesToFlag.add(board[i-1][j+1]);
-					tilesToFlag.add(board[i+1][j+1]);
+				if (board[i][j].noOfNeighboringMines == 2 && board[i - 1][j].noOfNeighboringMines == 1
+						&& board[i + 1][j].noOfNeighboringMines == 1 && board[i][j - 1].visited
+						&& board[i - 1][j - 1].visited && board[i + 1][j - 1].visited && !board[i][j + 1].visited
+						&& !board[i - 1][j + 1].visited && !board[i + 1][j + 1].visited) {
+					tilesToFlag.add(board[i - 1][j + 1]);
+					tilesToFlag.add(board[i + 1][j + 1]);
 				}
-				
-				if (board[i][j].noOfNeighboringMines == 2 && 
-					board[i][j-1].noOfNeighboringMines == 1 && 
-					board[i][j+1].noOfNeighboringMines == 1 &&
-					board[i-1][j].visited && 
-					board[i-1][j-1].visited  && 
-					board[i-1][j+1].visited  &&
-					!board[i+1][j].visited &&
-					!board[i+1][j-1].visited  && 
-					!board[i+1][j+1].visited ) {
-					tilesToFlag.add(board[i+1][j-1]);
-					tilesToFlag.add(board[i+1][j+1]);
+
+				if (board[i][j].noOfNeighboringMines == 2 && board[i][j - 1].noOfNeighboringMines == 1
+						&& board[i][j + 1].noOfNeighboringMines == 1 && board[i - 1][j].visited
+						&& board[i - 1][j - 1].visited && board[i - 1][j + 1].visited && !board[i + 1][j].visited
+						&& !board[i + 1][j - 1].visited && !board[i + 1][j + 1].visited) {
+					tilesToFlag.add(board[i + 1][j - 1]);
+					tilesToFlag.add(board[i + 1][j + 1]);
 				}
-				if (board[i][j].noOfNeighboringMines == 2 && 
-					board[i][j-1].noOfNeighboringMines == 1 && 
-					board[i][j+1].noOfNeighboringMines == 1 &&
-					!board[i-1][j].visited && 
-					!board[i-1][j-1].visited  && 
-					!board[i-1][j+1].visited  &&
-					board[i+1][j].visited &&
-					board[i+1][j-1].visited  && 
-					board[i+1][j+1].visited ) {
-					tilesToFlag.add(board[i-1][j-1]);
-					tilesToFlag.add(board[i-1][j+1]);
+				if (board[i][j].noOfNeighboringMines == 2 && board[i][j - 1].noOfNeighboringMines == 1
+						&& board[i][j + 1].noOfNeighboringMines == 1 && !board[i - 1][j].visited
+						&& !board[i - 1][j - 1].visited && !board[i - 1][j + 1].visited && board[i + 1][j].visited
+						&& board[i + 1][j - 1].visited && board[i + 1][j + 1].visited) {
+					tilesToFlag.add(board[i - 1][j - 1]);
+					tilesToFlag.add(board[i - 1][j + 1]);
 				}
 			}
 		}
