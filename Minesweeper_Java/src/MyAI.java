@@ -384,57 +384,87 @@ public class MyAI extends AI {
 				}
 			}
 		}
-		// 4 grid patterns
+		/**
+		 * 1 2 2 1 horizontally
+		 */
 		for (int i = 2; i < rowNum - 2; i++) {
-			for (int j = 2; j < colNum - 2; j++) {
+			for (int j = 2; j < colNum - 1; j++) {
 				if (board[i][j].noOfNeighboringMines == 2
 						&& board[i - 1][j].noOfNeighboringMines == 1
 						&& board[i + 1][j].noOfNeighboringMines == 2
+						&& board[i + 2][j].noOfNeighboringMines == 1
 						&& !board[i][j - 1].visited
 						&& !board[i - 1][j - 1].visited
 						&& !board[i + 1][j - 1].visited
+						&& !board[i + 2][j - 1].visited
 						&& board[i][j + 1].visited
 						&& board[i - 1][j + 1].visited
-						&& board[i + 1][j + 1].visited) {
-					tilesToFlag.add(board[i - 1][j - 1]);
+						&& board[i + 1][j + 1].visited
+						&& board[i + 2][j + 1].visited) {
+					tilesToFlag.add(board[i][j - 1]);
 					tilesToFlag.add(board[i + 1][j - 1]);
-				}
-				if (board[i][j].noOfNeighboringMines == 2
-						&& board[i - 1][j].noOfNeighboringMines == 1
-						&& board[i + 1][j].noOfNeighboringMines == 1
-						&& board[i][j - 1].visited
-						&& board[i - 1][j - 1].visited
-						&& board[i + 1][j - 1].visited
-						&& !board[i][j + 1].visited
-						&& !board[i - 1][j + 1].visited
-						&& !board[i + 1][j + 1].visited) {
-					tilesToFlag.add(board[i - 1][j + 1]);
-					tilesToFlag.add(board[i + 1][j + 1]);
+					markSafe(i - 1, j - 1);
+					markSafe(i + 2, j - 1);
 				}
 
 				if (board[i][j].noOfNeighboringMines == 2
-						&& board[i][j - 1].noOfNeighboringMines == 1
-						&& board[i][j + 1].noOfNeighboringMines == 1
-						&& board[i - 1][j].visited
+						&& board[i - 1][j].noOfNeighboringMines == 1
+						&& board[i + 1][j].noOfNeighboringMines == 2
+						&& board[i + 2][j].noOfNeighboringMines == 1
+						&& board[i][j - 1].visited
 						&& board[i - 1][j - 1].visited
-						&& board[i - 1][j + 1].visited
-						&& !board[i + 1][j].visited
-						&& !board[i + 1][j - 1].visited
-						&& !board[i + 1][j + 1].visited) {
-					tilesToFlag.add(board[i + 1][j - 1]);
+						&& board[i + 1][j - 1].visited
+						&& board[i + 2][j - 1].visited
+						&& !board[i][j + 1].visited
+						&& !board[i - 1][j + 1].visited
+						&& !board[i + 1][j + 1].visited
+						&& !board[i + 2][j + 1].visited) {
+					tilesToFlag.add(board[i][j + 1]);
 					tilesToFlag.add(board[i + 1][j + 1]);
+					markSafe(i - 1, j + 1);
+					markSafe(i + 2, j + 1);
 				}
+			}
+		}
+
+		/** 1 2 2 1 vertically **/
+		for (int i = 2; i < rowNum - 1; i++) {
+			for (int j = 2; j < colNum - 2; j++) {
 				if (board[i][j].noOfNeighboringMines == 2
 						&& board[i][j - 1].noOfNeighboringMines == 1
-						&& board[i][j + 1].noOfNeighboringMines == 1
+						&& board[i][j + 1].noOfNeighboringMines == 2
+						&& board[i][j + 2].noOfNeighboringMines == 1
 						&& !board[i - 1][j].visited
 						&& !board[i - 1][j - 1].visited
 						&& !board[i - 1][j + 1].visited
+						&& !board[i - 1][j + 2].visited
 						&& board[i + 1][j].visited
 						&& board[i + 1][j - 1].visited
-						&& board[i + 1][j + 1].visited) {
-					tilesToFlag.add(board[i - 1][j - 1]);
+						&& board[i + 1][j + 1].visited
+						&& board[i + 1][j + 2].visited) {
+					tilesToFlag.add(board[i - 1][j]);
 					tilesToFlag.add(board[i - 1][j + 1]);
+					markSafe(i - 1, j - 1);
+					markSafe(i - 1, j + 2);
+				}
+
+				/** 1 2 2 1 vertically **/
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i][j - 1].noOfNeighboringMines == 1
+						&& board[i][j + 1].noOfNeighboringMines == 2
+						&& board[i][j + 2].noOfNeighboringMines == 1
+						&& board[i - 1][j].visited
+						&& board[i - 1][j - 1].visited
+						&& board[i - 1][j + 1].visited
+						&& board[i - 1][j + 2].visited
+						&& !board[i + 1][j].visited
+						&& !board[i + 1][j - 1].visited
+						&& !board[i + 1][j + 1].visited
+						&& !board[i + 1][j + 2].visited) {
+					tilesToFlag.add(board[i + 1][j]);
+					tilesToFlag.add(board[i + 1][j + 1]);
+					markSafe(i + 1, j - 1);
+					markSafe(i + 1, j + 2);
 				}
 			}
 		}
