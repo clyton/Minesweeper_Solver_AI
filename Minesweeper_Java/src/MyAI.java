@@ -216,10 +216,19 @@ public class MyAI extends AI {
 //		minePq.removeIf(cell -> cell.noOfNeighboringMines==0 && cell.visited);
 		setNumberOfMines(lastVisited, number);
 		lastVisited.visited = true;
-		printboard(board);
+//		printboard(board);
 		// visited[lastVisited.x][lastVisited.y] = true;
 		number = lastVisited.noOfNeighboringMines;
 
+//		if (totalMines == 0) {
+//			for (int i = 1; i < rowNum; i++) {
+//				for (int j = 1; j < colNum; j++) {
+//					if (!board[i][j].visited && !board[i][j].flagged)
+//						markSafe(i, j);
+//				}
+//			}
+//		}
+//
 		if (number < 1) {
 			markNeighboursSafe(board[lastVisited.x][lastVisited.y]);
 		} else {
@@ -262,7 +271,6 @@ public class MyAI extends AI {
 		}
 
 		findPatterns();
-
 		if (!safeToVisit.isEmpty()) {
 			Iterator<TwoTuple> setIterator = safeToVisit.iterator();
 			lastVisited = setIterator.next();
@@ -283,6 +291,8 @@ public class MyAI extends AI {
 							.getNeighbors().stream()
 							.filter(icell -> icell.visited && !icell.flagged)
 							.collect(Collectors.toList());
+					if (nonFlaggedVisitedNeighbors.isEmpty())
+						continue;
 
 					double sum = 0.0;
 					for (TwoTuple twoTuple : nonFlaggedVisitedNeighbors) {
@@ -333,6 +343,7 @@ public class MyAI extends AI {
 		// 3 grid patterns
 		for (int i = 2; i < rowNum - 1; i++) {
 			for (int j = 2; j < colNum - 1; j++) {
+				// 121
 				if (board[i][j].noOfNeighboringMines == 2
 						&& board[i - 1][j].noOfNeighboringMines == 1
 						&& board[i + 1][j].noOfNeighboringMines == 1
@@ -345,6 +356,7 @@ public class MyAI extends AI {
 					tilesToFlag.add(board[i - 1][j - 1]);
 					tilesToFlag.add(board[i + 1][j - 1]);
 				}
+				// 121
 				if (board[i][j].noOfNeighboringMines == 2
 						&& board[i - 1][j].noOfNeighboringMines == 1
 						&& board[i + 1][j].noOfNeighboringMines == 1
@@ -358,6 +370,7 @@ public class MyAI extends AI {
 					tilesToFlag.add(board[i + 1][j + 1]);
 				}
 
+				// 121
 				if (board[i][j].noOfNeighboringMines == 2
 						&& board[i][j - 1].noOfNeighboringMines == 1
 						&& board[i][j + 1].noOfNeighboringMines == 1
@@ -370,6 +383,7 @@ public class MyAI extends AI {
 					tilesToFlag.add(board[i + 1][j - 1]);
 					tilesToFlag.add(board[i + 1][j + 1]);
 				}
+				// 121
 				if (board[i][j].noOfNeighboringMines == 2
 						&& board[i][j - 1].noOfNeighboringMines == 1
 						&& board[i][j + 1].noOfNeighboringMines == 1
@@ -382,13 +396,218 @@ public class MyAI extends AI {
 					tilesToFlag.add(board[i - 1][j - 1]);
 					tilesToFlag.add(board[i - 1][j + 1]);
 				}
+
+				// 12*
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i - 1][j].noOfNeighboringMines == 1
+						&& board[i + 1][j].visited && !board[i][j - 1].visited
+						&& !board[i - 1][j - 1].visited
+						&& !board[i + 1][j - 1].visited
+						&& board[i][j + 1].visited
+						&& board[i - 1][j + 1].visited
+						&& board[i + 1][j + 1].visited) {
+					tilesToFlag.add(board[i + 1][j - 1]);
+				}
+
+				// 12*
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i - 1][j].noOfNeighboringMines == 1
+						&& board[i + 1][j].visited && board[i][j - 1].visited
+						&& board[i - 1][j - 1].visited
+						&& board[i + 1][j - 1].visited
+						&& !board[i][j + 1].visited
+						&& !board[i - 1][j + 1].visited
+						&& !board[i + 1][j + 1].visited) {
+					tilesToFlag.add(board[i + 1][j + 1]);
+				}
+
+				// 12*
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i + 1][j].noOfNeighboringMines == 1
+						&& board[i - 1][j].visited
+						&& board[i - 1][j - 1].visited
+						&& board[i][j - 1].visited
+						&& board[i + 1][j - 1].visited
+						&& !board[i - 1][j + 1].visited
+						&& !board[i][j + 1].visited
+						&& !board[i + 1][j + 1].visited) {
+					tilesToFlag.add(board[i - 1][j + 1]);
+				}
+				// 12*
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i + 1][j].noOfNeighboringMines == 1
+						&& board[i - 1][j].visited
+						&& !board[i - 1][j - 1].visited
+						&& !board[i][j - 1].visited
+						&& !board[i + 1][j - 1].visited
+						&& board[i - 1][j + 1].visited
+						&& board[i][j + 1].visited
+						&& board[i + 1][j + 1].visited) {
+					tilesToFlag.add(board[i - 1][j - 1]);
+				}
+
+				// 12*
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i][j - 1].noOfNeighboringMines == 1
+						&& board[i][j + 1].visited
+						&& board[i + 1][j - 1].visited
+						&& board[i + 1][j].visited
+						&& board[i + 1][j + 1].visited
+						&& !board[i - 1][j - 1].visited
+						&& !board[i - 1][j].visited
+						&& !board[i - 1][j + 1].visited) {
+
+					tilesToFlag.add(board[i - 1][j + 1]);
+				}
+
+				// 12*
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i][j - 1].noOfNeighboringMines == 1
+						&& board[i][j + 1].visited
+						&& !board[i + 1][j - 1].visited
+						&& !board[i + 1][j].visited
+						&& !board[i + 1][j + 1].visited
+						&& board[i - 1][j - 1].visited
+						&& board[i - 1][j].visited
+						&& board[i - 1][j + 1].visited) {
+
+					tilesToFlag.add(board[i + 1][j + 1]);
+				}
+
+				// 12*
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i][j + 1].noOfNeighboringMines == 1
+						&& board[i][j - 1].visited
+						&& !board[i + 1][j - 1].visited
+						&& !board[i + 1][j].visited
+						&& !board[i + 1][j + 1].visited
+						&& board[i - 1][j - 1].visited
+						&& board[i - 1][j].visited
+						&& board[i - 1][j + 1].visited) {
+
+					tilesToFlag.add(board[i + 1][j - 1]);
+				}
+
+				// 12*
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i][j + 1].noOfNeighboringMines == 1
+						&& board[i][j - 1].visited
+						&& board[i + 1][j - 1].visited
+						&& board[i + 1][j].visited
+						&& board[i + 1][j + 1].visited
+						&& !board[i - 1][j - 1].visited
+						&& !board[i - 1][j].visited
+						&& !board[i - 1][j + 1].visited) {
+
+					tilesToFlag.add(board[i - 1][j - 1]);
+				}
 			}
-		}
-		/**
-		 * 1 2 2 1 horizontally
-		 */
+		} /**
+			 * visited 1 2 2 1 horizontally unvisited
+			 */
 		for (int i = 2; i < rowNum - 2; i++) {
 			for (int j = 2; j < colNum - 1; j++) {
+
+				// 12 horizontal
+				if (board[i][j].noOfNeighboringMines == 1
+						&& board[i + 1][j].noOfNeighboringMines == 2
+						&& board[i - 1][j].visited && board[i + 2][j].visited
+						&& board[i - 1][j + 1].visited
+						&& board[i][j + 1].visited
+						&& board[i + 1][j + 1].visited
+						&& board[i + 2][j + 1].visited
+						&& !board[i - 1][j - 1].visited
+						&& !board[i][j - 1].visited
+						&& !board[i + 1][j - 1].visited
+						&& !board[i + 2][j - 1].visited) {
+					tilesToFlag.add(board[i + 2][j - 1]);
+					markSafe(i - 1, j - 1);
+				}
+
+				// 12 horizontal
+				if (board[i][j].noOfNeighboringMines == 1
+						&& board[i + 1][j].noOfNeighboringMines == 2
+						&& board[i - 1][j].visited && board[i + 2][j].visited
+						&& board[i - 1][j - 1].visited
+						&& board[i][j - 1].visited
+						&& board[i + 1][j - 1].visited
+						&& board[i + 2][j - 1].visited
+						&& !board[i - 1][j + 1].visited
+						&& !board[i][j + 1].visited
+						&& !board[i + 1][j + 1].visited
+						&& !board[i + 2][j + 1].visited) {
+					tilesToFlag.add(board[i + 2][j + 1]);
+					markSafe(i - 1, j + 1);
+				}
+
+//				horizontal 21
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i + 1][j].noOfNeighboringMines == 1
+						&& board[i - 1][j].visited && board[i + 2][j].visited
+						&& board[i - 1][j + 1].visited
+						&& board[i][j + 1].visited
+						&& board[i + 1][j + 1].visited
+						&& board[i + 2][j + 1].visited
+						&& !board[i - 1][j - 1].visited
+						&& !board[i][j - 1].visited
+						&& !board[i + 1][j - 1].visited
+						&& !board[i + 2][j - 1].visited) {
+					tilesToFlag.add(board[i - 1][j - 1]);
+					markSafe(i + 2, j - 1);
+				}
+
+				// horizontal 21
+				if (board[i][j].noOfNeighboringMines == 2
+						&& board[i + 1][j].noOfNeighboringMines == 1
+						&& board[i - 1][j].visited && board[i + 2][j].visited
+						&& board[i - 1][j - 1].visited
+						&& board[i][j - 1].visited
+						&& board[i + 1][j - 1].visited
+						&& board[i + 2][j - 1].visited
+						&& !board[i - 1][j + 1].visited
+						&& !board[i][j + 1].visited
+						&& !board[i + 1][j + 1].visited
+						&& !board[i + 2][j + 1].visited) {
+					tilesToFlag.add(board[i - 1][j + 1]);
+					markSafe(i + 2, j + 1);
+				}
+
+				// horizontal 11
+				if (board[i][j].noOfNeighboringMines == 1
+						&& board[i + 1][j].noOfNeighboringMines == 1
+						&& board[i - 1][j - 1].visited
+						&& board[i - 1][j].visited
+						&& board[i - 1][j + 1].visited
+						&& board[i][j - 1].visited && board[i][j + 1].visited
+						&& !board[i + 1][j - 1].visited
+						&& !board[i + 1][j + 1].visited
+						&& !board[i + 2][j].visited
+						&& !board[i + 2][j - 1].visited
+						&& !board[i + 2][j + 1].visited) {
+					markSafe(i + 2, j - 1);
+					markSafe(i + 2, j);
+					markSafe(i + 2, j + 1);
+				}
+
+				// horizontal 11
+				if (board[i][j].noOfNeighboringMines == 1
+						&& board[i + 1][j].noOfNeighboringMines == 1
+						&& !board[i - 1][j - 1].visited
+						&& !board[i - 1][j].visited
+						&& !board[i - 1][j + 1].visited
+						&& !board[i][j - 1].visited && !board[i][j + 1].visited
+						&& board[i + 1][j - 1].visited
+						&& board[i + 1][j + 1].visited
+						&& board[i + 2][j].visited
+						&& board[i + 2][j - 1].visited
+						&& board[i + 2][j + 1].visited) {
+					markSafe(i - 1, j - 1);
+					markSafe(i - 1, j);
+					markSafe(i - 1, j + 1);
+				}
+
+//		  visited 1 2 2 1 horizontally unvisited
+
 				if (board[i][j].noOfNeighboringMines == 2
 						&& board[i - 1][j].noOfNeighboringMines == 1
 						&& board[i + 1][j].noOfNeighboringMines == 2
@@ -427,9 +646,111 @@ public class MyAI extends AI {
 			}
 		}
 
-		/** 1 2 2 1 vertically **/
 		for (int i = 2; i < rowNum - 1; i++) {
 			for (int j = 2; j < colNum - 2; j++) {
+
+				// 11 vertical
+				if (board[i][j].noOfNeighboringMines == 1
+						&& board[i][j + 1].noOfNeighboringMines == 1
+						&& board[i][j - 1].visited
+						&& board[i - 1][j - 1].visited
+						&& board[i - 1][j].visited
+						&& board[i + 1][j - 1].visited
+						&& board[i + 1][j].visited
+						&& !board[i - 1][j + 1].visited
+						&& !board[i - 1][j + 2].visited
+						&& !board[i][j + 2].visited
+						&& !board[i + 1][j + 1].visited
+						&& !board[i + 1][j + 2].visited) {
+					markSafe(i - 1, j + 2);
+					markSafe(i, j + 2);
+					markSafe(i + 1, j + 2);
+				}
+
+				// 11 vertical change j->j+1 and j+2 -> j -1
+				if (board[i][j + 1].noOfNeighboringMines == 1
+						&& board[i][j].noOfNeighboringMines == 1
+						&& board[i][j + 2].visited
+						&& board[i - 1][j + 2].visited
+						&& board[i - 1][j + 1].visited
+						&& board[i + 1][j + 2].visited
+						&& board[i + 1][j + 1].visited
+						&& !board[i - 1][j].visited
+						&& !board[i - 1][j - 1].visited
+						&& !board[i][j - 1].visited && !board[i + 1][j].visited
+						&& !board[i + 1][j - 1].visited) {
+					markSafe(i - 1, j - 1);
+					markSafe(i, j - 1);
+					markSafe(i + 1, j - 1);
+				}
+
+//				// 12 vertical
+//				if (board[i][j].noOfNeighboringMines == 1
+//						&& board[i][j + 1].noOfNeighboringMines == 2
+//						&& board[i][j - 1].visited && board[i][j + 2].visited
+//						&& board[i + 1][j - 1].visited
+//						&& board[i + 1][j].visited
+//						&& board[i + 1][j + 1].visited
+//						&& board[i + 1][j + 2].visited
+//						&& !board[i - 1][j - 1].visited
+//						&& !board[i - 1][j].visited
+//						&& !board[i - 1][j + 1].visited
+//						&& !board[i - 1][j + 2].visited) {
+//					tilesToFlag.add(board[i - 1][j + 2]);
+//					markSafe(i - 1, j - 1);
+//				}
+//
+//				// 12 vertical
+//				if (board[i][j].noOfNeighboringMines == 1
+//						&& board[i][j + 1].noOfNeighboringMines == 2
+//						&& board[i][j - 1].visited // && board[i + 2][j].visited
+//						&& board[i][j + 2].visited
+//						&& board[i - 1][j - 1].visited
+//						&& board[i - 1][j].visited
+//						&& board[i - 1][j + 1].visited
+//						&& board[i - 1][j + 2].visited
+//						&& !board[i + 1][j - 1].visited
+//						&& !board[i + 1][j].visited
+//						&& !board[i + 1][j + 1].visited
+//						&& !board[i + 1][j + 2].visited) {
+//					tilesToFlag.add(board[i + 1][j + 2]);
+//					markSafe(i + 1, j - 1);
+//				}
+//
+//				// 21 vertical
+//				if (board[i][j].noOfNeighboringMines == 2
+//						&& board[i][j + 1].noOfNeighboringMines == 1
+//						&& board[i][j - 1].visited && board[i][j + 2].visited
+//						&& board[i + 1][j - 1].visited
+//						&& board[i + 1][j].visited
+//						&& board[i + 1][j + 1].visited
+//						&& board[i + 1][j + 2].visited
+//						&& !board[i - 1][j - 1].visited
+//						&& !board[i - 1][j].visited
+//						&& !board[i - 1][j + 1].visited
+//						&& !board[i - 1][j + 2].visited) {
+//					markSafe(i - 1, j + 2);
+//					tilesToFlag.add(board[i - 1][j - 1]);
+//				}
+//
+//				// 21 vertical
+//				if (board[i][j].noOfNeighboringMines == 2
+//						&& board[i][j + 1].noOfNeighboringMines == 1
+//						&& board[i][j - 1].visited // && board[i + 2][j].visited
+//						&& board[i][j + 2].visited
+//						&& board[i - 1][j - 1].visited
+//						&& board[i - 1][j].visited
+//						&& board[i - 1][j + 1].visited
+//						&& board[i - 1][j + 2].visited
+//						&& !board[i + 1][j - 1].visited
+//						&& !board[i + 1][j].visited
+//						&& !board[i + 1][j + 1].visited
+//						&& !board[i + 1][j + 2].visited) {
+//					tilesToFlag.add(board[i + 1][j - 1]);
+//					markSafe(i + 1, j + 2);
+//				}
+
+				// 1221 vertically
 				if (board[i][j].noOfNeighboringMines == 2
 						&& board[i][j - 1].noOfNeighboringMines == 1
 						&& board[i][j + 1].noOfNeighboringMines == 2
@@ -466,8 +787,15 @@ public class MyAI extends AI {
 					markSafe(i + 1, j - 1);
 					markSafe(i + 1, j + 2);
 				}
+
 			}
 		}
+
+		if (!tilesToFlag.isEmpty()) {
+			System.out.println(tilesToFlag);
+			printboard(board);
+		}
+
 		flagTiles(tilesToFlag);
 	}
 
@@ -476,6 +804,7 @@ public class MyAI extends AI {
 			if (flaggedMines.contains(eachTile))
 				continue; // if already flagged ignore
 			eachTile.flagged = true;
+			totalMines--;
 			eachTile.getNeighbors().forEach(n -> setNumberOfMines(n, -1));
 			flaggedMines.add(eachTile);
 		}
@@ -504,6 +833,7 @@ public class MyAI extends AI {
 				}
 			}
 		}
+		totalMines--;
 	}
 
 	private Action flag(TwoTuple lastVisited2) {
