@@ -963,37 +963,39 @@ public class MyAI extends AI {
 		}
 
 		private double[][] reduce(double[][] matrix) {
-			double[][] rref = new double[matrix.length][];
+			double[][] echelonMatrix = new double[matrix.length][];
 			for (int i = 0; i < matrix.length; i++)
-				rref[i] = Arrays.copyOf(matrix[i], matrix[i].length);
+				echelonMatrix[i] = Arrays.copyOf(matrix[i], matrix[i].length);
 
 			int r = 0;
-			for (int c = 0; c < rref[0].length && r < rref.length; c++) {
+			for (int c = 0; c < echelonMatrix[0].length
+					&& r < echelonMatrix.length; c++) {
 				int j = r;
-				for (int i = r + 1; i < rref.length; i++)
-					if (Math.abs(rref[i][c]) > Math.abs(rref[j][c]))
+				for (int i = r + 1; i < echelonMatrix.length; i++)
+					if (Math.abs(echelonMatrix[i][c]) > Math
+							.abs(echelonMatrix[j][c]))
 						j = i;
-				if (Math.abs(rref[j][c]) < 0.00001)
+				if (Math.abs(echelonMatrix[j][c]) < 0.00001)
 					continue;
 
-				double[] temp = rref[j];
-				rref[j] = rref[r];
-				rref[r] = temp;
+				double[] temp = echelonMatrix[j];
+				echelonMatrix[j] = echelonMatrix[r];
+				echelonMatrix[r] = temp;
 
-				double s = 1.0 / rref[r][c];
-				for (j = 0; j < rref[0].length; j++)
-					rref[r][j] *= s;
-				for (int i = 0; i < rref.length; i++) {
+				double s = 1.0 / echelonMatrix[r][c];
+				for (j = 0; j < echelonMatrix[0].length; j++)
+					echelonMatrix[r][j] *= s;
+				for (int i = 0; i < echelonMatrix.length; i++) {
 					if (i != r) {
-						double t = rref[i][c];
-						for (j = 0; j < rref[0].length; j++)
-							rref[i][j] -= t * rref[r][j];
+						double t = echelonMatrix[i][c];
+						for (j = 0; j < echelonMatrix[0].length; j++)
+							echelonMatrix[i][j] -= t * echelonMatrix[r][j];
 					}
 				}
 				r++;
 			}
 
-			return rref;
+			return echelonMatrix;
 		}
 
 		void compute() {
@@ -1004,27 +1006,65 @@ public class MyAI extends AI {
 			for (int i = 0; i < r; i++) {
 				ArrayList<TwoTuple> tuples = new ArrayList<>();
 				double sum = 0.0;
+				double min = 0.0;
+				double max = 0.0;
+				ArrayList<TwoTuple> negative = new ArrayList<>();
+				ArrayList<TwoTuple> positive = new ArrayList<>();
 				for (int j = 0; j < c - 1; j++) {
 					if (compare(rref[i][j], 0) != 0) {
-						int bx = (j - 1) / (colNum - 1) + 1;
+						int bx = (j) / (colNum - 1) + 1;
 						int by = j % (colNum - 1) + 1;
+//						System.out.printf("Mapping column %d to (%d,%d)", j, bx,
+//								by);
+//						System.out.println();
+//						System.out.printf("RREF[%d][%d] = %f", i, j,
+//								rref[i][j]);
+//						System.out.println();
 						tuples.add(board[bx][by]);
 						sum += rref[i][j];
+					}
+
+					if (rref[i][j] < 0) {
+						min += rref[i][j];
+						int bx = (j) / (colNum - 1) + 1;
+						int by = j % (colNum - 1) + 1;
+						negative.add(board[bx][by]);
+					}
+					if (rref[i][j] > 0) {
+						max += rref[i][j];
+						int bx = (j) / (colNum - 1) + 1;
+						int by = j % (colNum - 1) + 1;
+						positive.add(board[bx][by]);
 					}
 
 				}
 				if (tuples.size() == 1) {
 					if (compare(rref[i][c - 1], 1) == 0) {
 						flagTile(tuples.get(0));
+//						System.out.printf("Flag one tile");
 					} else if (compare(rref[i][c - 1], 0) == 0) {
 						markSafe(tuples.get(0).x, tuples.get(0).y);
+//						System.out.printf("Safe one tile");
 					}
 				}
 //				if (tuples.size() != 0) {
-//					if (compare(rref[i][c - 1], sum) == 0) {
-//						tuples.forEach(t -> markSafe(t.x, t.y));
+//					if (compare(sum, 0) != 0
+//							&& compare(rref[i][c - 1], sum) == 0) {
+//						tuples.forEach(t -> flagTile(t));
+//						System.out.printf("Sum is equal = %f", sum);
+//						System.out.printf("RREF[i][c-1] = %f", rref[i][c - 1]);
 //					}
 //				}
+				if (tuples.size() != 0) {
+					if (compare(rref[i][c - 1], min) == 0) {
+						negative.forEach(t -> flagTile(t));
+						positive.forEach(t -> markSafe(t.x, t.y));
+					}
+					if (compare(rref[i][c - 1], max) == 0) {
+						positive.forEach(t -> flagTile(t));
+						negative.forEach(t -> markSafe(t.x, t.y));
+					}
+				}
 			}
 
 		}
