@@ -791,11 +791,6 @@ public class MyAI extends AI {
 			}
 		}
 
-		if (!tilesToFlag.isEmpty()) {
-			System.out.println(tilesToFlag);
-			printboard(board);
-		}
-
 		flagTiles(tilesToFlag);
 	}
 
