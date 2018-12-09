@@ -264,7 +264,7 @@ public class MyAI extends AI {
 			flagTiles(tilesToFlag);
 		}
 
-//		findPatterns();
+		findPatterns();
 		if (!safeToVisit.isEmpty()) {
 			Iterator<TwoTuple> setIterator = safeToVisit.iterator();
 			lastVisited = setIterator.next();
@@ -1020,11 +1020,11 @@ public class MyAI extends AI {
 						markSafe(tuples.get(0).x, tuples.get(0).y);
 					}
 				}
-				if (tuples.size() != 0) {
-					if (compare(rref[i][c - 1], sum) == 0) {
-						tuples.forEach(t -> markSafe(t.x, t.y));
-					}
-				}
+//				if (tuples.size() != 0) {
+//					if (compare(rref[i][c - 1], sum) == 0) {
+//						tuples.forEach(t -> markSafe(t.x, t.y));
+//					}
+//				}
 			}
 
 		}
