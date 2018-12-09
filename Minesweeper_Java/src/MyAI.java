@@ -804,6 +804,7 @@ public class MyAI extends AI {
 			if (flaggedMines.contains(eachTile))
 				continue; // if already flagged ignore
 			eachTile.flagged = true;
+			eachTile.visited = true;
 			totalMines--;
 			eachTile.getNeighbors().forEach(n -> setNumberOfMines(n, -1));
 			flaggedMines.add(eachTile);
@@ -823,6 +824,7 @@ public class MyAI extends AI {
 		if (flaggedMines.contains(tileToFlag))
 			return; // if already flagged ignore
 		tileToFlag.flagged = true;
+		tileToFlag.visited = true;
 		tileToFlag.getNeighbors().forEach(n -> setNumberOfMines(n, -1));
 		flaggedMines.add(tileToFlag);
 		for (int i = 1; i < rowNum; i++) {
