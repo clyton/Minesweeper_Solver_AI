@@ -18,6 +18,7 @@ NOTES:       - If you are having trouble understanding how the shell
 package src;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -172,6 +173,7 @@ public class MyAI extends AI {
 	HashSet<TwoTuple> flaggedMines = new HashSet<>();
 
 	private int coveredTiles = 0;
+	Matrix m;
 
 	public MyAI(int rowDimension, int colDimension, int totalMines, int startX,
 			int startY) {
@@ -206,6 +208,7 @@ public class MyAI extends AI {
 		}
 		lastVisited = board[currX][currY];
 		lastVisited.visited = true;
+		m = new Matrix(board);
 	}
 
 	// ################## Implement getAction(), (required)
@@ -269,6 +272,16 @@ public class MyAI extends AI {
 			return uncover(lastVisited);
 		}
 
+		m.resetGrid();
+		m.prepareGrid();
+		m.compute();
+
+		if (!safeToVisit.isEmpty()) {
+			Iterator<TwoTuple> setIterator = safeToVisit.iterator();
+			lastVisited = setIterator.next();
+			safeToVisit.remove(lastVisited);
+			return uncover(lastVisited);
+		}
 //		if (isThereAFreeCorner() != null) {
 //			lastVisited = isThereAFreeCorner();
 //			return uncover(lastVisited);
@@ -865,7 +878,7 @@ public class MyAI extends AI {
 					no = "#";
 				if (board2[i][j].flagged)
 					no = "F";
-				if (board2[i][j].visited)
+				else if (board2[i][j].visited)
 					no = String.valueOf(noToPrint);
 				if (!board2[i][j].visited && !board[i][j].flagged
 						&& noToPrint != Integer.MAX_VALUE)
@@ -903,5 +916,198 @@ public class MyAI extends AI {
 	// ################### Helper Functions Go Here (optional)
 	// ##################
 	// ...
+
+	private class Matrix {
+		double grid[][];
+		int r;
+		int c;
+		final double THRESHOLD = 0.00001;
+
+		Matrix(TwoTuple[][] board) {
+			r = (rowNum - 1) * (colNum - 1);
+			c = (rowNum - 1) * (colNum - 1) + 1;
+			grid = new double[r][c];
+		}
+
+		void resetGrid() {
+			for (int i = 0; i < r; i++) {
+				for (int j = 0; j < c; j++) {
+					grid[i][j] = 0;
+				}
+			}
+		}
+
+		void prepareGrid() {
+			for (int i = 1; i < rowNum; i++) {
+				for (int j = 1; j < colNum; j++) {
+					if (board[i][j].visited && !board[i][j].flagged
+							&& board[i][j].noOfNeighboringMines != 0) {
+						List<TwoTuple> neighbors = board[i][j].getNeighbors()
+								.stream().filter(cell -> cell.visited == false)
+								.collect(Collectors.toList());
+
+						if (neighbors.isEmpty())
+							continue;
+
+						int gridRow = (i - 1) * (colNum - 1) + (j - 1);
+						grid[gridRow][c - 1] = board[i][j].noOfNeighboringMines;
+
+						for (TwoTuple n : neighbors) {
+							int nIndex = (n.x - 1) * (colNum - 1) + (n.y - 1);
+							grid[gridRow][nIndex] = 1;
+						}
+					}
+
+				}
+			}
+		}
+
+		private double[][] reduce(double[][] matrix) {
+			double[][] echelonMatrix = new double[matrix.length][];
+			for (int i = 0; i < matrix.length; i++)
+				echelonMatrix[i] = Arrays.copyOf(matrix[i], matrix[i].length);
+
+			int r = 0;
+			for (int c = 0; c < echelonMatrix[0].length
+					&& r < echelonMatrix.length; c++) {
+				int j = r;
+				for (int i = r + 1; i < echelonMatrix.length; i++)
+					if (Math.abs(echelonMatrix[i][c]) > Math
+							.abs(echelonMatrix[j][c]))
+						j = i;
+				if (Math.abs(echelonMatrix[j][c]) < 0.00001)
+					continue;
+
+				double[] temp = echelonMatrix[j];
+				echelonMatrix[j] = echelonMatrix[r];
+				echelonMatrix[r] = temp;
+
+				double s = 1.0 / echelonMatrix[r][c];
+				for (j = 0; j < echelonMatrix[0].length; j++)
+					echelonMatrix[r][j] *= s;
+				for (int i = 0; i < echelonMatrix.length; i++) {
+					if (i != r) {
+						double t = echelonMatrix[i][c];
+						for (j = 0; j < echelonMatrix[0].length; j++)
+							echelonMatrix[i][j] -= t * echelonMatrix[r][j];
+					}
+				}
+				r++;
+			}
+
+			return echelonMatrix;
+		}
+
+		void compute() {
+
+			double[][] rref;
+			rref = reduce(grid);
+//			printGrid(rref);
+			for (int i = 0; i < r; i++) {
+				ArrayList<TwoTuple> tuples = new ArrayList<>();
+				double sum = 0.0;
+				double min = 0.0;
+				double max = 0.0;
+				ArrayList<TwoTuple> negative = new ArrayList<>();
+				ArrayList<TwoTuple> positive = new ArrayList<>();
+				for (int j = 0; j < c - 1; j++) {
+					if (compare(rref[i][j], 0) != 0) {
+						int bx = (j) / (colNum - 1) + 1;
+						int by = j % (colNum - 1) + 1;
+//						System.out.printf("Mapping column %d to (%d,%d)", j, bx,
+//								by);
+//						System.out.println();
+//						System.out.printf("RREF[%d][%d] = %f", i, j,
+//								rref[i][j]);
+//						System.out.println();
+						tuples.add(board[bx][by]);
+						sum += rref[i][j];
+					}
+
+					if (rref[i][j] < 0) {
+						min += rref[i][j];
+						int bx = (j) / (colNum - 1) + 1;
+						int by = j % (colNum - 1) + 1;
+						negative.add(board[bx][by]);
+					}
+					if (rref[i][j] > 0) {
+						max += rref[i][j];
+						int bx = (j) / (colNum - 1) + 1;
+						int by = j % (colNum - 1) + 1;
+						positive.add(board[bx][by]);
+					}
+
+				}
+				if (tuples.size() == 1) {
+					if (compare(rref[i][c - 1], 1) == 0) {
+						flagTile(tuples.get(0));
+//						System.out.printf("Flag one tile");
+					} else if (compare(rref[i][c - 1], 0) == 0) {
+						markSafe(tuples.get(0).x, tuples.get(0).y);
+//						System.out.printf("Safe one tile");
+					}
+				}
+//				if (tuples.size() != 0) {
+//					if (compare(sum, 0) != 0
+//							&& compare(rref[i][c - 1], sum) == 0) {
+//						tuples.forEach(t -> flagTile(t));
+//						System.out.printf("Sum is equal = %f", sum);
+//						System.out.printf("RREF[i][c-1] = %f", rref[i][c - 1]);
+//					}
+//				}
+				if (tuples.size() != 0) {
+					if (compare(rref[i][c - 1], min) == 0) {
+						negative.forEach(t -> flagTile(t));
+						positive.forEach(t -> markSafe(t.x, t.y));
+					}
+					if (compare(rref[i][c - 1], max) == 0) {
+						positive.forEach(t -> flagTile(t));
+						negative.forEach(t -> markSafe(t.x, t.y));
+					}
+				}
+			}
+
+		}
+
+		private int compare(double one, double two) {
+			if (Math.abs(one - two) < THRESHOLD) {
+				return 0;
+			}
+			return 1;
+		}
+
+		private void printGrid(double[][] grid2) {
+			for (int i = -1; i < r; i++) {
+				for (int j = -1; j < c; j++) {
+
+					if (i == -1 || j == -1) {
+						if (i == -1 && j == -1) {
+							System.out.printf("%d (%d,%d)%-5s", j, 0, 0, "");
+							continue;
+						}
+						if (i == -1) {
+
+							System.out.printf("%d(%d,%d)%-5s", j,
+									(j - 1) / (colNum - 1), (j) % (colNum - 1),
+									"");
+//							System.out.print("(" + (j - 1) / (colNum - 1) + ","
+//									+ (j - 1) % (colNum - 1) + ")");
+						} else {
+							System.out.printf("%d (%d,%d)%-10s", i,
+									(i - 1) / (colNum - 1), (i) % (colNum - 1),
+									"");
+//							System.out.print("(" + (i - 1) / (colNum - 1) + ","
+//									+ (i - 1) % (colNum - 1) + ")");
+						}
+
+					} else {
+						System.out.printf("%-10.1f", grid2[i][j]);
+					}
+				}
+				System.out.println();
+			}
+
+		}
+	}
 
 }
